@@ -48,25 +48,19 @@ The configuration assumes that **Prometheus and Grafana are already installed an
 
 Architecture
 
-┌──────────────────────── Ubuntu Host ────────────────────────┐
-│                                                              │
-│   ┌────────────────┐         ┌──────────────────┐           │
-│   │  Prometheus    │────────▶│     Grafana      │           │
-│   │  (systemd)     │  query  │    (systemd)     │           │
-│   │   :9090        │         │     :3000        │           │
-│   └────────┬───────┘         └──────────────────┘           │
-│            │ scrape every 15s                               │
-│            │ http://<minikube-ip>:30001/metrics             │
-│            ▼                                                 │
-│   ┌──────────────────── Minikube Cluster ────────────────┐  │
-│   │                                                       │  │
-│   │   Service (NodePort 30001)                           │  │
-│   │            │                                          │  │
-│   │            ├──▶ Pod 1 (Node.js app, /metrics)        │  │
-│   │            └──▶ Pod 2 (Node.js app, /metrics)        │  │
-│   │                                                       │  │
-│   └───────────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────────┘
+ Ubuntu Host                                                                           
+   │  Prometheus    │────────▶    Grafana                
+   │  (systemd)     │  query  │    (systemd)                
+   │   :9090        │         │     :3000                  
+              
+│ scrape every 15s                               
+ http://<minikube-ip>:30001/metrics             
+
+Minikube Cluster
+   Service (NodePort 30001)                       
+├──▶ Pod 1 (Node.js app, /metrics)        
+└──▶ Pod 2 (Node.js app, /metrics)          
+
 
 Prometheus reaches the application through the Minikube node IP and the `NodePort` (`30001`). The `NodePort` Service load-balances incoming traffic across the available replicas.
 
