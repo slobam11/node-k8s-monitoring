@@ -45,11 +45,9 @@ The configuration assumes that **Prometheus and Grafana are already installed an
 - Document the Prometheus scrape configuration required to monitor a `NodePort`-exposed service from a host-level Prometheus
 - Serve as a starting template for production-bound microservices
 
----
 
-## Architecture
+Architecture
 
-```
 ┌──────────────────────── Ubuntu Host ────────────────────────┐
 │                                                              │
 │   ┌────────────────┐         ┌──────────────────┐           │
@@ -69,13 +67,12 @@ The configuration assumes that **Prometheus and Grafana are already installed an
 │   │                                                       │  │
 │   └───────────────────────────────────────────────────────┘  │
 └──────────────────────────────────────────────────────────────┘
-```
 
 Prometheus reaches the application through the Minikube node IP and the `NodePort` (`30001`). The `NodePort` Service load-balances incoming traffic across the available replicas.
 
----
 
-## Technology Stack
+
+Technology Stack
 
 | Component | Version | Purpose |
 |-----------|---------|---------|
@@ -88,9 +85,9 @@ Prometheus reaches the application through the Minikube node IP and the `NodePor
 | Prometheus | 2.x | Metrics collection (host-installed) |
 | Grafana | 10.x+ | Metrics visualization (host-installed) |
 
----
 
-## Prerequisites
+
+ Prerequisites
 
 The following must be installed and operational on the host machine:
 
@@ -104,19 +101,15 @@ The following must be installed and operational on the host machine:
 
 Verify the environment with:
 
-```bash
+
 docker --version
 minikube version
 kubectl version --client
 sudo systemctl is-active prometheus
 sudo systemctl is-active grafana-server
-```
-
----
 
 ## Project Structure
 
-```
 .
 ├── index.js                  # Express application with /metrics endpoint
 ├── package.json              # Node.js dependencies
@@ -126,15 +119,13 @@ sudo systemctl is-active grafana-server
 └── k8s/
     ├── deployment.yaml       # Kubernetes Deployment (2 replicas, health probes)
     └── service.yaml          # NodePort Service exposing port 30001
-```
 
----
 
 ## Quick Start
 
 For users familiar with the underlying technologies, the following sequence brings the application online:
 
-```bash
+
 # 1. Start Minikube
 minikube start --driver=docker --memory=4096 --cpus=2
 
@@ -150,11 +141,8 @@ curl http://$(minikube ip):30001/
 curl http://$(minikube ip):30001/metrics
 
 # 5. Add the scrape job to Prometheus (see "Prometheus Integration" below)
-```
 
-Detailed explanations for each step follow.
 
----
 
 ## Detailed Walkthrough
 
@@ -172,7 +160,8 @@ The application (`index.js`) is a standard Express server with three endpoints:
 
 Two categories of metrics are registered:
 
-**Default Node.js metrics** (provided by `prom-client.collectDefaultMetrics()`):
+**
+Default Node.js metrics** (provided by `prom-client.collectDefaultMetrics()`):
 
 - `process_cpu_user_seconds_total`, `process_cpu_system_seconds_total`
 - `process_resident_memory_bytes`, `process_heap_bytes`
@@ -197,7 +186,6 @@ The `Dockerfile` follows standard practices for production Node.js images:
 
 **Critical:** Minikube operates its own internal Docker daemon, which is independent of the host's Docker daemon. Images built on the host are not visible inside Minikube. The image must therefore be built within the Minikube Docker environment:
 
-```bash
 eval $(minikube docker-env)
 docker build -t node-k8s-demo:1.0 .
 ```
@@ -237,8 +225,7 @@ Because Prometheus runs on the host (outside the cluster), it must be configured
 #### Determining the Minikube IP
 
 ```bash
-minikube ip
-```
+minikube ip  192.168.1.xxx
 
 This returns the IP address assigned to the Minikube node (typically `192.168.49.2` when using the Docker driver).
 
@@ -255,7 +242,6 @@ Edit `/etc/prometheus/prometheus.yml` and append the following entry under `scra
         labels:
           app: 'node-k8s-demo'
           environment: 'minikube'
-```
 
 Replace `192.168.49.2` with the actual Minikube IP returned by the previous command.
 
@@ -273,10 +259,10 @@ The command must return `SUCCESS`. A failed validation indicates a syntax error 
 
 #### Applying the Changes
 
-```bash
+
 sudo systemctl restart prometheus
 sudo systemctl status prometheus --no-pager
-```
+
 
 The service must report `active (running)`. Verify the new target is being scraped by navigating to **Status → Target health** in the Prometheus UI (typically `http://<host>:9090`) and locating the `node-k8s-app` job. Its state should be `UP` within one scrape interval.
 
@@ -302,7 +288,6 @@ The dashboard visualizes CPU usage, memory consumption, event loop lag, active h
 
 For HTTP-specific dashboards leveraging the custom metrics (`http_requests_total`, `http_request_duration_seconds`), consider dashboard IDs `12230` or `14584`.
 
----
 
 ## Verification
 
@@ -328,9 +313,8 @@ curl http://$(minikube ip):30001/metrics | head
 # Prometheus is scraping the target
 curl -s "http://localhost:9090/api/v1/query?query=up{job=\"node-k8s-app\"}" | grep -o '"value":\[[^]]*\]'
 # Expected: a value of 1 (indicating UP)
-```
 
----
+
 
 ## Screenshots
 
@@ -346,22 +330,21 @@ The imported dashboard (`11159`) displays live application metrics including CPU
 
 ![Grafana Dashboard](docs/grafana-dashboard.png)
 
----
+
 
 ## Scaling
 
 Horizontal scaling is achieved by adjusting the replica count:
 
-```bash
+
 kubectl scale deployment node-app-deployment --replicas=5
 kubectl get pods
-```
+
 
 The `NodePort` Service automatically distributes incoming traffic across all available replicas. This can be verified by sending repeated requests to the root endpoint and observing the returned hostname:
 
-```bash
+
 for i in {1..10}; do curl -s http://$(minikube ip):30001/ ; done
-```
 
 Each response reports the hostname of the pod that served the request.
 
@@ -406,7 +389,6 @@ This project is intended as a learning and reference exercise. It deliberately o
 - **No autoscaling.** The replica count is fixed. Production deployments commonly use `HorizontalPodAutoscaler` driven by CPU, memory, or custom metrics.
 - **No alerting.** This deployment exposes metrics but does not define alerting rules. Prometheus Alertmanager integration would extend this with notification routing.
 
----
 
 ## Further Reading
 
@@ -418,8 +400,4 @@ This project is intended as a learning and reference exercise. It deliberately o
 - [The RED Method for monitoring microservices](https://www.weave.works/blog/the-red-method-key-metrics-for-microservices-architecture/)
 - [The USE Method for system performance](https://www.brendangregg.com/usemethod.html)
 
----
 
-## License
-
-MIT License. See [LICENSE](LICENSE) for details.
