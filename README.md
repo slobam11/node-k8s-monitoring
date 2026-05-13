@@ -35,7 +35,9 @@ This project illustrates the end-to-end workflow that is standard in modern clou
 
 This repository contains a minimal Node.js (Express) application instrumented with the Prometheus client library, packaged as a Docker image, and deployed to a Kubernetes cluster running under Minikube. The application exposes a `/metrics` endpoint which is scraped by a host-level Prometheus instance and visualized through Grafana dashboards.
 
-The configuration assumes that **Prometheus and Grafana are already installed and running on the host machine** (outside the Kubernetes cluster), which is a common pattern when an organization has established monitoring infrastructure that supervises multiple environments.
+The configuration assumes that 
+Prometheus and Grafana are already installed and running on the host machine
+(outside the Kubernetes cluster), which is a common pattern when an organization has established monitoring infrastructure that supervises multiple environments.
 
 ### Objectives
 
@@ -63,23 +65,6 @@ Minikube Cluster
 
 
 Prometheus reaches the application through the Minikube node IP and the `NodePort` (`30001`). The `NodePort` Service load-balances incoming traffic across the available replicas.
-
-
-
-Technology Stack
-
-| Component | Version | Purpose |
-|-----------|---------|---------|
-| Node.js | 20 LTS (Alpine) | Application runtime |
-| Express | ^4.19.2 | HTTP framework |
-| prom-client | ^15.1.3 | Prometheus metrics library for Node.js |
-| Docker | 20.10+ | Container runtime |
-| Minikube | 1.36+ | Local Kubernetes cluster |
-| Kubernetes | 1.33 | Container orchestration |
-| Prometheus | 2.x | Metrics collection (host-installed) |
-| Grafana | 10.x+ | Metrics visualization (host-installed) |
-
-
 
  Prerequisites
 
