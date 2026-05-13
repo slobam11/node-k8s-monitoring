@@ -224,7 +224,6 @@ Because Prometheus runs on the host (outside the cluster), it must be configured
 
 #### Determining the Minikube IP
 
-```bash
 minikube ip  192.168.1.xxx
 
 This returns the IP address assigned to the Minikube node (typically `192.168.49.2` when using the Docker driver).
@@ -233,7 +232,7 @@ This returns the IP address assigned to the Minikube node (typically `192.168.49
 
 Edit `/etc/prometheus/prometheus.yml` and append the following entry under `scrape_configs`:
 
-```yaml
+yaml
   - job_name: 'node-k8s-app'
     metrics_path: '/metrics'
     scrape_interval: 15s
@@ -243,7 +242,7 @@ Edit `/etc/prometheus/prometheus.yml` and append the following entry under `scra
           app: 'node-k8s-demo'
           environment: 'minikube'
 
-Replace `192.168.49.2` with the actual Minikube IP returned by the previous command.
+Replace `192.168.49.x` with the actual Minikube IP returned by the previous command.
 
 **Indentation matters.** The `- job_name:` line must align with other entries already present under `scrape_configs:` (typically two spaces from the left margin).
 
@@ -251,9 +250,9 @@ Replace `192.168.49.2` with the actual Minikube IP returned by the previous comm
 
 Before restarting Prometheus, validate the configuration file:
 
-```bash
+
 sudo promtool check config /etc/prometheus/prometheus.yml
-```
+
 
 The command must return `SUCCESS`. A failed validation indicates a syntax error and Prometheus will refuse to start if the existing service is restarted with an invalid configuration.
 
@@ -293,7 +292,6 @@ For HTTP-specific dashboards leveraging the custom metrics (`http_requests_total
 
 After completing all steps, the following commands should succeed:
 
-```bash
 # Pods are running
 kubectl get pods
 # Expected: 2 pods with status "Running" and "1/1" ready
@@ -399,5 +397,10 @@ This project is intended as a learning and reference exercise. It deliberately o
 - [Grafana Documentation](https://grafana.com/docs/grafana/latest/)
 - [The RED Method for monitoring microservices](https://www.weave.works/blog/the-red-method-key-metrics-for-microservices-architecture/)
 - [The USE Method for system performance](https://www.brendangregg.com/usemethod.html)
+
+<img width="1711" height="177" alt="image" src="https://github.com/user-attachments/assets/9aacca24-64fa-457c-92c2-06575d403882" />
+<img width="1790" height="832" alt="image" src="https://github.com/user-attachments/assets/5cbc1069-fc53-41f0-b029-986ac4c489ca" />
+
+
 
 
